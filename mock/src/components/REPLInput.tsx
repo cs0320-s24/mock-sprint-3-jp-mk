@@ -1,26 +1,58 @@
 import { Dispatch, SetStateAction, useState } from 'react';
 import '../styles/main.css';
 import { ControlledInput } from './ControlledInput';
+import { REPLFunction, mode, load, view, search } from './REPLFunction';
+
+
+/**
+ * TODO: Docs for this class. 
+ */
 
 interface REPLInputProps{
-  // TODO: Fill this with desired props... Maybe something to keep track of the submitted commands
-  // CHANGED
   history: string[],
   setHistory: Dispatch<SetStateAction<string[]>>,
 }
-// You can use a custom interface or explicit fields or both! An alternative to the current function header might be:
-// REPLInput(history: string[], setHistory: Dispatch<SetStateAction<string[]>>)
+/**
+ * TODO: Docs for this function.
+ *  
+ * @param
+ * @returns 
+*/
 export function REPLInput(props : REPLInputProps) {
     // Remember: let React manage state in your webapp. 
     // Manages the contents of the input box
     const [commandString, setCommandString] = useState<string>('');
     // TODO WITH TA : add a count state
     const [count, setCount] = useState<number>(0)
-    
+
+
+    /* A Map of strings to REPLFunctions. 
+        The key represents the, 
+        while the value is the corresponding function to that key value. 
+    */
+    const map = new Map<string, REPLFunction>();
+
+    const mapInit = () => {
+      map.set("mode", mode);
+      map.set("load", load);
+      map.set("view", view);
+      map.set("search", search);
+    }
+
     // This function is triggered when the button is clicked.
     function handleSubmit(commandString:string) {
+      mapInit();
+      const args : string[] = commandString.trim().split(" ");
+      const [,...rest] = args; // rest is an array with everything but the first argument of args
+
+      const replFun: REPLFunction = map.get(args[0]);
+      try {
+        console.log(replFun(rest))
+      } catch (TypeError) {
+        console.log("Invalid function input.")
+      }
+
       setCount(count+1)
-      // CHANGED
       props.setHistory([...props.history, commandString])
       setCommandString('')
     }
@@ -38,7 +70,6 @@ export function REPLInput(props : REPLInputProps) {
               <legend>Enter a command:</legend>
               <ControlledInput value={commandString} setValue={setCommandString} ariaLabel={"Command input"}/>
             </fieldset>
-            {/* TODO: Currently this button just counts up, can we make it push the contents of the input box to the history?*/}
             <button onClick={() => handleSubmit(commandString)}>Submitted {count} times</button>
         </div>
     );
