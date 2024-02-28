@@ -14,7 +14,6 @@ import { invalidCommandTable } from "./invalidCommandJson";
 export interface REPLFunction {
   (args: Array<string>): String | String[][];
   mode: "brief" | "verbose";
-  setMode: Dispatch<SetStateAction<"brief" | "verbose">>;
 }
 
 /**
@@ -27,7 +26,6 @@ export function mode(args: string[]) {
   const modeString: string = args[0];
   if (modeString === "brief" || "verbose") {
     if (modeString === "brief") {
-      props.setMode();
     }
   } else {
     console.log("mode not imputted breif or verbose");

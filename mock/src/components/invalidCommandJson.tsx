@@ -5,9 +5,16 @@
 export const invalidCommandTable = [
   ["Valid Command", "Input", "Output"],
   ["brief", "N/A", "Shows only the output of the command"],
-  ["verbose", "N/A", "Shows both the read command and the output of the command"],
-  ["load_file", "Path of file", "Loads the desired CSV file"],
+  [
+    "verbose",
+    "N/A",
+    "Shows both the read command and the output of the command",
+  ],
+  ["load", "Path of file", "Loads the desired CSV file"],
   ["view", "N/A", "Displays a table from the loaded file"],
-  ["search", "headers: true or false | index: true or false | column: as the name or a number between [] | target: string to search for between []"
-  , "Rows that contain this value"]
+  [
+    "search",
+    "headers: true or false | index: true or false | column: as the name or a number between [] | target: string to search for between []",
+    "Rows that contain this value",
+  ],
 ];

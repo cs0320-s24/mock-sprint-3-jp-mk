@@ -10,8 +10,8 @@ import { invalidCommandTable } from "./invalidCommandJson";
  */
 
 interface REPLInputProps {
-  history: HistoryEntry[];
-  setHistory: Dispatch<SetStateAction<HistoryEntry[]>>;
+  history: string[];
+  setHistory: Dispatch<SetStateAction<string[]>>;
   mode: "brief" | "verbose";
   setMode: Dispatch<SetStateAction<"brief" | "verbose">>;
 }
@@ -33,50 +33,102 @@ export function REPLInput(props: REPLInputProps) {
         The key represents the, 
         while the value is the corresponding function to that key value. 
     */
-  const map = new Map<string, REPLFunction>();
+  // const map = new Map<string, REPLFunction>();
 
-  const mapInit = () => {
-    map.set("mode", mode);
-    map.set("load", load);
-    map.set("view", view);
-    map.set("search", search);
-  };
+  // const mapInit = () => {
+  //   map.set("mode", mode);
+  //   map.set("load", load);
+  //   map.set("view", view);
+  //   map.set("search", search);
+  // };
 
   // This function is triggered when the button is clicked.
   function handleSubmit(commandString: string) {
-    mapInit();
+    // mapInit();
     const trimmedCommand = commandString.trim();
     const args: string[] = commandString.trim().split(" ");
     const [, ...rest] = args; // rest is an array with everything but the first argument of args
+    // const replFun: REPLFunction = map.get(args[0]);
 
+    // replFun(rest);
     let output: OutputContent = { message: "" };
 
-    if (trimmedCommand === "brief" || trimmedCommand === "verbose") {
-      output = handleModeChange(trimmedCommand);
+    switch (trimmedCommand) {
+      case "brief":
+        mode(commandString);
+        break;
+      case "load":
+        load(args);
+        break;
+      case "view":
+        view(args);
+        break;
+      case "search":
+        search(args);
+        break;
+      default:
+        output = { data: invalidCommandTable };
     }
 
     setCount(count + 1);
-    props.setHistory([
-      ...props.history,
-      { command: trimmedCommand, output: output },
-    ]);
+    props.setHistory([commandString]);
     setCommandString("");
   }
 
   /**
-   * Helper method to handle the change between modes
-   * @param command a string indicating what mode should be set
-   * @returns Returns a success message or an invalid command table
+   * A command-processor function for our REPL. The function returns a string, which is the value to print to history when
+   * the command is done executing.
+   *
+   * The arguments passed in the input (which need not be named "args") should
+   * *NOT* contain the command-name prefix.
    */
-  function handleModeChange(command: string): OutputContent {
+  interface REPLFunction {
+    (args: Array<string>): String | String[][];
+  }
+
+  /**
+   * TODO: Docs for this function.
+   *
+   * @param
+   * @returns
+   */
+  function mode(command: string) {
     const trimmedCommand = command.trim();
     if (trimmedCommand === "brief" || trimmedCommand === "verbose") {
       props.setMode(trimmedCommand as "brief" | "verbose");
-      console.log("returned message");
       return { message: "Mode changed" };
     }
-    console.log("invalid command returned");
     return { data: invalidCommandTable };
+  }
+
+  /**
+   * TODO: Docs for this function.
+   *
+   * @param
+   * @returns
+   */
+  function view(args: string[]) {
+    return args.toString();
+  }
+
+  /**
+   * TODO: Docs for this function.
+   *
+   * @param
+   * @returns
+   */
+  function load(args: string[]) {
+    return args.toString();
+  }
+
+  /**
+   * TODO: Docs for this function.
+   *
+   * @param
+   * @returns
+   */
+  function search(args: string[]) {
+    return args.toString();
   }
 
   /**
