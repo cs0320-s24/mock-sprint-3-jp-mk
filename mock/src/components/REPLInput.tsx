@@ -2,7 +2,7 @@ import { Dispatch, SetStateAction, useState } from 'react';
 import '../styles/main.css';
 import { ControlledInput } from './ControlledInput';
 import { REPLFunction, mode, load, view, search } from './REPLFunction';
-
+import React from 'react';
 
 /**
  * TODO: Docs for this class. 
@@ -45,10 +45,9 @@ export function REPLInput(props : REPLInputProps) {
       const args : string[] = commandString.trim().split(" ");
       const [,...rest] = args; // rest is an array with everything but the first argument of args
 
-      const replFun: REPLFunction = map.get(args[0]);
-      try {
-        console.log(replFun(rest))
-      } catch (TypeError) {
+      const replFun: REPLFunction | undefined = map.get(args[0]);
+        
+      if(replFun == undefined){
         console.log("Invalid function input.")
       }
 
