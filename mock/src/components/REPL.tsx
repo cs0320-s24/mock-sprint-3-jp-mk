@@ -16,8 +16,8 @@ import { HistoryEntry } from "./types";
 export default function REPL() {
   // TODO: Add some kind of shared state that holds all the commands submitted.
   // CHANGED
-  const [history, setHistory] = useState<string[]>([]);
-  const [mode, setMode] = useState<"brief" | "verbose">("brief");
+  const [history, setHistory] = useState<HistoryEntry[]>([]);
+  const [mode, setMode] = useState<Boolean>(true);
 
   return (
     <div className="repl">

@@ -1,8 +1,8 @@
 import "../styles/main.css";
 // import { HistoryEntry } from "./types";
 import { CSV } from "./CSV";
-import { HistoryEntry } from "../types";
-import { OutputContent } from "../types";
+import { HistoryEntry } from "./types";
+import { OutputContent } from "./types";
 
 /**
  * Prop defining the history as the history entry type, and with a mode
@@ -10,17 +10,17 @@ import { OutputContent } from "../types";
  */
 interface REPLHistoryProps {
   history: HistoryEntry[];
-  mode: "brief" | "verbose";
+  mode: Boolean;
 }
 
-export function REPLHistory({ history, mode = "brief" }: REPLHistoryProps) {
+export function REPLHistory({ history, mode = true }: REPLHistoryProps) {
   return (
     <div className="repl-history" aria-label="repl-history">
       {/* This is where command history will go */}
       {/* TODO: To go through all the pushed commands... try the .map() function! */}
       {/* CHANGED */}
       {history.map((entry, index) =>
-        mode === "verbose" ? (
+        mode === false ? (
           <div key={index}>
             <span className="label">Command:</span>{" "}
             <span className="command">{entry.command}</span>
