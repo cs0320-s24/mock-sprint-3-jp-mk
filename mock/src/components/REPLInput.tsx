@@ -1,19 +1,19 @@
 import { Dispatch, SetStateAction, useState } from "react";
 import "../styles/main.css";
 import { ControlledInput } from "./ControlledInput";
-import { REPLFunction, mode, load, view, search } from "./REPLFunction";
-import { HistoryEntry, OutputContent } from "./types";
+import { OutputContent } from "./types";
 import { invalidCommandTable } from "./invalidCommandJson";
+import { HistoryEntry } from "./types";
 
 /**
  * TODO: Docs for this class.
  */
 
 interface REPLInputProps {
-  history: string[];
-  setHistory: Dispatch<SetStateAction<string[]>>;
-  mode: "brief" | "verbose";
-  setMode: Dispatch<SetStateAction<"brief" | "verbose">>;
+  history: HistoryEntry[];
+  setHistory: Dispatch<SetStateAction<HistoryEntry[]>>;
+  mode: Boolean;
+  setMode: Dispatch<SetStateAction<Boolean>>;
 }
 
 /**
@@ -51,27 +51,31 @@ export function REPLInput(props: REPLInputProps) {
     // const replFun: REPLFunction = map.get(args[0]);
 
     // replFun(rest);
-    let output: OutputContent = { message: "" };
+    let output: OutputContent = { message: "--" }; //default o put
 
     switch (trimmedCommand) {
-      case "brief":
-        mode(commandString);
+      case "mode":
+        output = mode(trimmedCommand);
         break;
       case "load":
-        load(args);
+        output = load(args);
         break;
       case "view":
-        view(args);
+        output = view(args);
         break;
       case "search":
-        search(args);
+        output = search(args);
         break;
       default:
         output = { data: invalidCommandTable };
     }
 
     setCount(count + 1);
-    props.setHistory([commandString]);
+    props.setHistory([
+      ...props.history,
+      { command: trimmedCommand, output: output },
+    ]);
+
     setCommandString("");
   }
 
@@ -93,12 +97,13 @@ export function REPLInput(props: REPLInputProps) {
    * @returns
    */
   function mode(command: string) {
-    const trimmedCommand = command.trim();
-    if (trimmedCommand === "brief" || trimmedCommand === "verbose") {
-      props.setMode(trimmedCommand as "brief" | "verbose");
-      return { message: "Mode changed" };
+    if (props.mode) {
+      props.setMode(!props.mode);
+      return { message: "Mode changed to Verbose" };
+    } else {
+      props.setMode(!props.mode);
+      return { message: "Mode changed to Brief" };
     }
-    return { data: invalidCommandTable };
   }
 
   /**
@@ -108,7 +113,7 @@ export function REPLInput(props: REPLInputProps) {
    * @returns
    */
   function view(args: string[]) {
-    return args.toString();
+    return { message: "Mode changed" };
   }
 
   /**
@@ -118,7 +123,7 @@ export function REPLInput(props: REPLInputProps) {
    * @returns
    */
   function load(args: string[]) {
-    return args.toString();
+    return { message: "Mode changed" };
   }
 
   /**
@@ -128,7 +133,7 @@ export function REPLInput(props: REPLInputProps) {
    * @returns
    */
   function search(args: string[]) {
-    return args.toString();
+    return { message: "Mode changed" };
   }
 
   /**

@@ -1,7 +1,7 @@
 import { Dispatch, SetStateAction, useState } from "react";
 import "../styles/main.css";
 import { ControlledInput } from "./ControlledInput";
-import { HistoryEntry, OutputContent } from "./types";
+import { OutputContent } from "./types";
 import { invalidCommandTable } from "./invalidCommandJson";
 
 /**
