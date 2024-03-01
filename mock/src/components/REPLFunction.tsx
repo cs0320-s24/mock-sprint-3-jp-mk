@@ -1,3 +1,9 @@
+import { Dispatch, SetStateAction, useState } from "react";
+import "../styles/main.css";
+import { ControlledInput } from "./ControlledInput";
+import { OutputContent } from "./types";
+import { invalidCommandTable } from "./invalidCommandJson";
+
 /**
  * A command-processor function for our REPL. The function returns a string, which is the value to print to history when
  * the command is done executing.
@@ -7,6 +13,7 @@
  */
 export interface REPLFunction {
   (args: Array<string>): String | String[][];
+  mode: "brief" | "verbose";
 }
 
 /**
@@ -15,9 +22,13 @@ export interface REPLFunction {
  * @param
  * @returns
  */
-export function mode(args: string) {
-  if (args === "mode") {
-    const newMode = args[0];
+export function mode(args: string[]) {
+  const modeString: string = args[0];
+  if (modeString === "brief" || "verbose") {
+    if (modeString === "brief") {
+    }
+  } else {
+    console.log("mode not imputted breif or verbose");
   }
 }
 

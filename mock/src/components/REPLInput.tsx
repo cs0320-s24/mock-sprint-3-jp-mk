@@ -1,9 +1,18 @@
 import { Dispatch, SetStateAction, useState } from "react";
 import "../styles/main.css";
 import { ControlledInput } from "./ControlledInput";
-import { REPLFunction, mode, load, view, search } from "./REPLFunction";
-import { HistoryEntry, OutputContent } from "./types";
+import { OutputContent } from "./types";
 import { invalidCommandTable } from "./invalidCommandJson";
+import { HistoryEntry } from "./types";
+import {
+  mockedCSV1,
+  mockedCSV2,
+  mockedCSV3,
+  mockedCSV4,
+  mockedCSV5,
+  mockedCSV6,
+  searchMock,
+} from "./mockJson";
 
 /**
  * TODO: Docs for this class.
@@ -12,8 +21,8 @@ import { invalidCommandTable } from "./invalidCommandJson";
 interface REPLInputProps {
   history: HistoryEntry[];
   setHistory: Dispatch<SetStateAction<HistoryEntry[]>>;
-  mode: "brief" | "verbose";
-  setMode: Dispatch<SetStateAction<"brief" | "verbose">>;
+  mode: Boolean;
+  setMode: Dispatch<SetStateAction<Boolean>>;
 }
 
 /**
@@ -28,31 +37,62 @@ export function REPLInput(props: REPLInputProps) {
   const [commandString, setCommandString] = useState<string>("");
   // TODO WITH TA : add a count state
   const [count, setCount] = useState<number>(0);
+  // State that tracks current (mock) filepath
+  const [currData, setCurrData] = useState<(string | number)[][]>();
+  // State that tracks if a file is loaded
+  const [isFileLoaded, setFileLoaded] = useState<boolean>(false);
+
+  // mocked data
+  const mockedFiles: { [key: string]: (string | number)[][] } = {
+    path1: mockedCSV1,
+    path2: mockedCSV2,
+    path3: mockedCSV3,
+    path4: mockedCSV4,
+    path5: mockedCSV5,
+    path6: mockedCSV6,
+  };
 
   /* A Map of strings to REPLFunctions. 
         The key represents the, 
         while the value is the corresponding function to that key value. 
     */
-  const map = new Map<string, REPLFunction>();
+  // const map = new Map<string, REPLFunction>();
 
-  const mapInit = () => {
-    map.set("mode", mode);
-    map.set("load", load);
-    map.set("view", view);
-    map.set("search", search);
-  };
+  // const mapInit = () => {
+  //   map.set("mode", mode);
+  //   map.set("load", load);
+  //   map.set("view", view);
+  //   map.set("search", search);
+  // };
 
   // This function is triggered when the button is clicked.
   function handleSubmit(commandString: string) {
-    mapInit();
+    // mapInit();
     const trimmedCommand = commandString.trim();
+    console.log(trimmedCommand);
     const args: string[] = commandString.trim().split(" ");
+    const command: string = args[0];
     const [, ...rest] = args; // rest is an array with everything but the first argument of args
+    // const replFun: REPLFunction = map.get(args[0]);
 
-    let output: OutputContent = { message: "" };
+    // replFun(rest);
+    let output: OutputContent = { message: "--" }; //default output
 
-    if (trimmedCommand === "brief" || trimmedCommand === "verbose") {
-      output = handleModeChange(trimmedCommand);
+    switch (command) {
+      case "mode":
+        output = mode(trimmedCommand);
+        break;
+      case "load":
+        output = load(rest[0]);
+        break;
+      case "view":
+        output = view();
+        break;
+      case "search":
+        output = search();
+        break;
+      default:
+        output = { data: invalidCommandTable };
     }
 
     setCount(count + 1);
@@ -60,23 +100,127 @@ export function REPLInput(props: REPLInputProps) {
       ...props.history,
       { command: trimmedCommand, output: output },
     ]);
+
     setCommandString("");
   }
 
   /**
-   * Helper method to handle the change between modes
-   * @param command a string indicating what mode should be set
-   * @returns Returns a success message or an invalid command table
+   * A command-processor function for our REPL. The function returns a string, which is the value to print to history when
+   * the command is done executing.
+   *
+   * The arguments passed in the input (which need not be named "args") should
+   * *NOT* contain the command-name prefix.
    */
-  function handleModeChange(command: string): OutputContent {
-    const trimmedCommand = command.trim();
-    if (trimmedCommand === "brief" || trimmedCommand === "verbose") {
-      props.setMode(trimmedCommand as "brief" | "verbose");
-      console.log("returned message");
-      return { message: "Mode changed" };
+  interface REPLFunction {
+    (args: Array<string>): String | String[][];
+  }
+
+  /**
+   * TODO: Docs for this function.
+   *
+   * @param
+   * @returns
+   */
+  function mode(command: string) {
+    if (props.mode) {
+      props.setMode(!props.mode);
+      return { message: "Mode changed to Verbose" };
+    } else {
+      props.setMode(!props.mode);
+      return { message: "Mode changed to Brief" };
     }
-    console.log("invalid command returned");
-    return { data: invalidCommandTable };
+  }
+
+  /**
+   * TODO: Docs for this function.
+   *
+   * @param
+   * @returns
+   */
+  function view() {
+    if (!currData) {
+      return { message: "No dataset is currently loaded" };
+    }
+    if (currData.some((row) => row.length > 0)) {
+      return { data: currData };
+    }
+    return { message: "File is empty" };
+  }
+
+  /**
+   * TODO: Docs for this function.
+   *
+   * @param
+   * @returns
+   */
+  function load(arg: string) {
+    const filePath = arg;
+    if (mockedFiles[filePath]) {
+      setCurrData(mockedFiles[filePath]);
+      setFileLoaded(true);
+      return { message: "Success - File Loaded" };
+    } else {
+      setFileLoaded(false);
+      return { message: "Error - File does not exist" };
+    }
+  }
+
+  /**
+   * TODO: Docs for this function.
+   *
+   * @param
+   * @returns
+   */
+
+  function applySearch(
+    target: string,
+    header: boolean,
+    index: boolean,
+    column?: string
+  ): (string | number)[][] {
+    return searchMock(index, header, column || "", target);
+  }
+
+  /**
+   * TODO: Docs for this function.
+   *
+   * @param
+   * @returns
+   */
+  function search(): OutputContent {
+    // Split the command string by spaces and extract words within brackets
+    const splitString = commandString.split(" ");
+    const regexString = commandString.match(/(?<=\[).+?(?=\])/g);
+
+    console.log(splitString, regexString);
+
+    // Validate the basic conditions
+    if (!isFileLoaded) {
+      return { message: "Load file before searching" };
+    }
+    if (
+      !currData ||
+      currData.length === 0 ||
+      (currData.length === 1 && currData[0].length === 0)
+    ) {
+      return { message: "File is empty" };
+    }
+    if (splitString.length < 2) {
+      return {
+        message: "Please include a target and an optional column to search",
+      };
+    }
+    if (!regexString || regexString.length < 1) {
+      return { data: invalidCommandTable };
+    }
+
+    // Extract the parameters from the split string
+    const isExactMatch = splitString[1] === "true";
+    const isCaseSensitive = splitString[2] === "true";
+    const target = regexString[0];
+
+    // Apply search based on the extracted parameters
+    return { data: applySearch(target, isExactMatch, isCaseSensitive) };
   }
 
   /**
