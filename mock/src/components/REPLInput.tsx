@@ -4,6 +4,15 @@ import { ControlledInput } from "./ControlledInput";
 import { OutputContent } from "./types";
 import { invalidCommandTable } from "./invalidCommandJson";
 import { HistoryEntry } from "./types";
+import {
+  mockedCSV1,
+  mockedCSV2,
+  mockedCSV3,
+  mockedCSV4,
+  mockedCSV5,
+  mockedCSV6,
+  searchMock,
+} from "./mockJson";
 
 /**
  * TODO: Docs for this class.
@@ -28,6 +37,20 @@ export function REPLInput(props: REPLInputProps) {
   const [commandString, setCommandString] = useState<string>("");
   // TODO WITH TA : add a count state
   const [count, setCount] = useState<number>(0);
+  // State that tracks loading
+  const [currData, setCurrData] = useState<(string | number)[][]>();
+
+  const [isFileLoaded, setFileLoaded] = useState<boolean>(false);
+
+  // mocked data
+  const mockedFiles: { [key: string]: (string | number)[][] } = {
+    path1: mockedCSV1,
+    path2: mockedCSV2,
+    path3: mockedCSV3,
+    path4: mockedCSV4,
+    path5: mockedCSV5,
+    path6: mockedCSV6,
+  };
 
   /* A Map of strings to REPLFunctions. 
         The key represents the, 
@@ -46,25 +69,27 @@ export function REPLInput(props: REPLInputProps) {
   function handleSubmit(commandString: string) {
     // mapInit();
     const trimmedCommand = commandString.trim();
+    console.log(trimmedCommand);
     const args: string[] = commandString.trim().split(" ");
+    const command: string = args[0];
     const [, ...rest] = args; // rest is an array with everything but the first argument of args
     // const replFun: REPLFunction = map.get(args[0]);
 
     // replFun(rest);
-    let output: OutputContent = { message: "--" }; //default o put
+    let output: OutputContent = { message: "--" }; //default output
 
-    switch (trimmedCommand) {
+    switch (command) {
       case "mode":
         output = mode(trimmedCommand);
         break;
       case "load":
-        output = load(args);
+        output = load(rest[0]);
         break;
       case "view":
-        output = view(args);
+        output = view();
         break;
       case "search":
-        output = search(args);
+        output = search();
         break;
       default:
         output = { data: invalidCommandTable };
@@ -112,8 +137,14 @@ export function REPLInput(props: REPLInputProps) {
    * @param
    * @returns
    */
-  function view(args: string[]) {
-    return { message: "Mode changed" };
+  function view() {
+    if (!currData) {
+      return { message: "No dataset is currently loaded" };
+    }
+    if (currData.some((row) => row.length > 0)) {
+      return { data: currData };
+    }
+    return { message: "File is empty" };
   }
 
   /**
@@ -122,8 +153,16 @@ export function REPLInput(props: REPLInputProps) {
    * @param
    * @returns
    */
-  function load(args: string[]) {
-    return { message: "Mode changed" };
+  function load(arg: string) {
+    const filePath = arg;
+    if (mockedFiles[filePath]) {
+      setCurrData(mockedFiles[filePath]);
+      setFileLoaded(true);
+      return { message: "Success - File Loaded" };
+    } else {
+      setFileLoaded(false);
+      return { message: "Error - File does not exist" };
+    }
   }
 
   /**
@@ -132,8 +171,56 @@ export function REPLInput(props: REPLInputProps) {
    * @param
    * @returns
    */
-  function search(args: string[]) {
-    return { message: "Mode changed" };
+
+  function applySearch(
+    target: string,
+    header: boolean,
+    index: boolean,
+    column?: string
+  ): (string | number)[][] {
+    return searchMock(index, header, column || "", target);
+  }
+
+  /**
+   * TODO: Docs for this function.
+   *
+   * @param
+   * @returns
+   */
+  function search(): OutputContent {
+    // Split the command string by spaces and extract words within brackets
+    const splitString = commandString.split(" ");
+    const regexString = commandString.match(/(?<=\[).+?(?=\])/g);
+
+    console.log(splitString, regexString);
+
+    // Validate the basic conditions
+    if (!isFileLoaded) {
+      return { message: "Load file before searching" };
+    }
+    if (
+      !currData ||
+      currData.length === 0 ||
+      (currData.length === 1 && currData[0].length === 0)
+    ) {
+      return { message: "File is empty" };
+    }
+    if (splitString.length < 2) {
+      return {
+        message: "Please include a target and an optional column to search",
+      };
+    }
+    if (!regexString || regexString.length < 1) {
+      return { data: invalidCommandTable };
+    }
+
+    // Extract the parameters from the split string
+    const isExactMatch = splitString[1] === "true";
+    const isCaseSensitive = splitString[2] === "true";
+    const target = regexString[0];
+
+    // Apply search based on the extracted parameters
+    return { data: applySearch(target, isExactMatch, isCaseSensitive) };
   }
 
   /**

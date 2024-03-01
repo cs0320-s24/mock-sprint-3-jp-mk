@@ -1,53 +1,82 @@
-import "../styles/main.css";
-// import { HistoryEntry } from "./types";
-import { CSV } from "./CSV";
-import { HistoryEntry } from "./types";
-import { OutputContent } from "./types";
+import React from "react";
+import { HistoryEntry, OutputContent } from "./types";
 
-/**
- * Prop defining the history as the history entry type, and with a mode
- * either as brief or verbose.
- */
 interface REPLHistoryProps {
   history: HistoryEntry[];
   mode: Boolean;
 }
 
+// Modified CSVTable component to handle the new data structure
+const CSVTable = ({ data }: { data: (string | number)[][] }) => {
+  if (!data || data.length === 0) return null;
+
+  // Assuming the first row contains headers
+  const headers = data[0];
+  const rows = data.slice(1); // All rows except the header row
+
+  return (
+    <table>
+      <thead>
+        <tr>
+          {headers.map((header, index) => (
+            <th key={index}>{header}</th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map((row, rowIndex) => (
+          <tr key={rowIndex}>
+            {row.map((cell, cellIndex) => (
+              <td key={cellIndex}>{cell}</td>
+            ))}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+};
+
 export function REPLHistory({ history, mode = true }: REPLHistoryProps) {
   return (
     <div className="repl-history" aria-label="repl-history">
-      {/* This is where command history will go */}
-      {/* TODO: To go through all the pushed commands... try the .map() function! */}
-      {/* CHANGED */}
-      {history.map((entry, index) =>
-        mode === false ? (
-          <div key={index}>
-            <span className="label">Command:</span>{" "}
-            <span className="command">{entry.command}</span>
-            <br />
-            <span className="label">Output:</span>
-            {/* output is a message */}
-            {entry.output.message ? (
-              <span className="output">{entry.output.message}</span>
-            ) : (
-              <span className="table">
-                {/* output is a non null table */}
-                <CSV data={entry.output.data!} />
-              </span>
-            )}
-          </div>
+      <div className="history-header">
+        {mode ? (
+          <h3>Output</h3>
         ) : (
-          <p key={index}>
-            {entry.output.message ? (
-              <span className="output">{entry.output.message}</span>
-            ) : (
-              <span className="table">
-                <CSV data={entry.output.data!} />
-              </span>
-            )}
-          </p>
-        )
-      )}
+          <>
+            <h3>Command History</h3>
+            <h3>Output</h3>
+          </>
+        )}
+      </div>
+      {history.map((entry, index) => (
+        <div key={index} className="history-entry">
+          {mode ? (
+            // Brief mode: Show only output
+            <div className="output-section-brief">
+              {entry.output.message ? (
+                <span className="output">{entry.output.message}</span>
+              ) : entry.output.data ? (
+                <CSVTable data={entry.output.data} />
+              ) : null}
+            </div>
+          ) : (
+            // Verbose mode: Show command and output
+            <>
+              <div className="command-section">
+                <span className="command">{entry.command}</span>
+              </div>
+              <div className="output-section">
+                {entry.output.message ? (
+                  <span className="output">{entry.output.message}</span>
+                ) : entry.output.data ? (
+                  <CSVTable data={entry.output.data} />
+                ) : null}
+              </div>
+            </>
+          )}
+        </div>
+      ))}
     </div>
   );
 }
