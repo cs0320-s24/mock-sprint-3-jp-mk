@@ -37,9 +37,9 @@ export function REPLInput(props: REPLInputProps) {
   const [commandString, setCommandString] = useState<string>("");
   // TODO WITH TA : add a count state
   const [count, setCount] = useState<number>(0);
-  // State that tracks loading
+  // State that tracks current (mock) filepath
   const [currData, setCurrData] = useState<(string | number)[][]>();
-
+  // State that tracks if a file is loaded
   const [isFileLoaded, setFileLoaded] = useState<boolean>(false);
 
   // mocked data
