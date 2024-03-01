@@ -12,7 +12,7 @@ const CSVTable = ({ data }: { data: (string | number)[][] }) => {
 
   // Assuming the first row contains headers
   const headers = data[0];
-  const rows = data.slice(1); // All rows except the header row
+  const [,...rows] = data; // All rows except the header row
 
   return (
     <table>

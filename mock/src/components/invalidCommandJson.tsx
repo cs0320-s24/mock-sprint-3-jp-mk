@@ -7,7 +7,7 @@ export const invalidCommandTable = [
   [
     "mode",
     "N/A",
-    "Breif: Shows only the output of the command | Verbose: Shows both the read command and the output of the command",
+    "Brief: Shows only the output of the command | Verbose: Shows both the read command and the output of the command",
   ],
   ["load", "Path of file", "Loads the desired CSV file"],
   ["view", "N/A", "Displays a table from the loaded file"],

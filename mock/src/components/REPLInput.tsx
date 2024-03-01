@@ -4,15 +4,7 @@ import { ControlledInput } from "./ControlledInput";
 import { OutputContent } from "./types";
 import { invalidCommandTable } from "./invalidCommandJson";
 import { HistoryEntry } from "./types";
-import {
-  mockedCSV1,
-  mockedCSV2,
-  mockedCSV3,
-  mockedCSV4,
-  mockedCSV5,
-  mockedCSV6,
-  searchMock,
-} from "./mockJson";
+import { REPLFunction, mode, view, search, load } from "./REPLFunction";
 
 /**
  * TODO: Docs for this class.
@@ -24,6 +16,58 @@ interface REPLInputProps {
   mode: Boolean;
   setMode: Dispatch<SetStateAction<Boolean>>;
 }
+
+export class REPLMap {
+
+  data = new Map<string, REPLFunction>()
+
+  get(key: string): REPLFunction {
+    var entry = this.data.get(key)
+    if (entry == undefined) {
+      return (): OutputContent => ({ data: invalidCommandTable });
+    } else {
+      return entry;
+    }
+  }
+
+  set(key: string, value: REPLFunction): this {
+    (key !== undefined && key !== "" && key !== null) ? this.data.set(key, value) : console.log("Key cannot be undefined, null or empty!")
+    return this
+  }
+}
+
+export class StateMap {
+  stateData = new Map<string, any>()
+  dispatchData = new Map<string, Dispatch<SetStateAction<any>>>()
+
+
+  getState(key: string): any {
+    var entry = this.stateData.get(key)
+    if (entry == undefined) {
+      console.log("Invalid dispatch key: Values returned from this function may be unpredictable")
+      return undefined;
+    } else {
+      return entry;
+    }
+  }
+
+  getDispatch(key: string): Dispatch<SetStateAction<any>> {
+    var entry = this.dispatchData.get(key)
+    if (entry == undefined) {
+      console.log("Invalid state key: Values returned from this function may be unpredictable")
+      return () => undefined;
+    } else {
+      return entry;
+    }
+  }
+
+  setState(key: string, state: any, dispatch: Dispatch<SetStateAction<any>>): this {
+    (key !== undefined && key !== "" && key !== null) ? this.stateData.set(key, state) : console.log("Key cannot be undefined, null or empty!");
+    (key !== undefined && key !== "" && key !== null) ? this.dispatchData.set(key, dispatch) : console.log("Key cannot be undefined, null or empty!")
+    return this
+  }
+}
+
 
 /**
  * TODO: Docs for this function.
@@ -37,190 +81,57 @@ export function REPLInput(props: REPLInputProps) {
   const [commandString, setCommandString] = useState<string>("");
   // TODO WITH TA : add a count state
   const [count, setCount] = useState<number>(0);
-  // State that tracks loading
-  const [currData, setCurrData] = useState<(string | number)[][]>();
 
   const [isFileLoaded, setFileLoaded] = useState<boolean>(false);
 
-  // mocked data
-  const mockedFiles: { [key: string]: (string | number)[][] } = {
-    path1: mockedCSV1,
-    path2: mockedCSV2,
-    path3: mockedCSV3,
-    path4: mockedCSV4,
-    path5: mockedCSV5,
-    path6: mockedCSV6,
-  };
+  const [currData, setCurrData] = useState<(string | number)[][]>();
+
+  // State that tracks loading
+
+  /**
+ * A command-processor function for our REPL. The function returns a string, which is the value to print to history when
+ * the command is done executing.
+ *
+ * The arguments passed in the input (which need not be named "args") should
+ * *NOT* contain the command-name prefix.
+ */
 
   /* A Map of strings to REPLFunctions. 
         The key represents the, 
         while the value is the corresponding function to that key value. 
     */
-  // const map = new Map<string, REPLFunction>();
+  const replMap: REPLMap = new REPLMap();
+  const stateMap: StateMap = new StateMap();
 
-  // const mapInit = () => {
-  //   map.set("mode", mode);
-  //   map.set("load", load);
-  //   map.set("view", view);
-  //   map.set("search", search);
-  // };
+  const mapInit = () => {
+    replMap.set("mode", mode);
+    replMap.set("load", load);
+    replMap.set("view", view);
+    replMap.set("search", search);
+    stateMap.setState('mode', props.mode, props.setMode);
+    stateMap.setState('isFileLoaded', isFileLoaded, setFileLoaded);
+    stateMap.setState('currData', currData, setCurrData);
+  };
 
   // This function is triggered when the button is clicked.
   function handleSubmit(commandString: string) {
-    // mapInit();
-    const trimmedCommand = commandString.trim();
-    console.log(trimmedCommand);
+    mapInit();
     const args: string[] = commandString.trim().split(" ");
     const command: string = args[0];
     const [, ...rest] = args; // rest is an array with everything but the first argument of args
-    // const replFun: REPLFunction = map.get(args[0]);
 
-    // replFun(rest);
-    let output: OutputContent = { message: "--" }; //default output
+    const replFun: REPLFunction = replMap.get(command);
 
-    switch (command) {
-      case "mode":
-        output = mode(trimmedCommand);
-        break;
-      case "load":
-        output = load(rest[0]);
-        break;
-      case "view":
-        output = view();
-        break;
-      case "search":
-        output = search();
-        break;
-      default:
-        output = { data: invalidCommandTable };
-    }
+    let output: OutputContent = replFun(rest, stateMap);
+    //stateMap
 
     setCount(count + 1);
     props.setHistory([
       ...props.history,
-      { command: trimmedCommand, output: output },
+      { command: command, output: output },
     ]);
 
     setCommandString("");
-  }
-
-  /**
-   * A command-processor function for our REPL. The function returns a string, which is the value to print to history when
-   * the command is done executing.
-   *
-   * The arguments passed in the input (which need not be named "args") should
-   * *NOT* contain the command-name prefix.
-   */
-  interface REPLFunction {
-    (args: Array<string>): String | String[][];
-  }
-
-  /**
-   * TODO: Docs for this function.
-   *
-   * @param
-   * @returns
-   */
-  function mode(command: string) {
-    if (props.mode) {
-      props.setMode(!props.mode);
-      return { message: "Mode changed to Verbose" };
-    } else {
-      props.setMode(!props.mode);
-      return { message: "Mode changed to Brief" };
-    }
-  }
-
-  /**
-   * TODO: Docs for this function.
-   *
-   * @param
-   * @returns
-   */
-  function view() {
-    if (!currData) {
-      return { message: "No dataset is currently loaded" };
-    }
-    if (currData.some((row) => row.length > 0)) {
-      return { data: currData };
-    }
-    return { message: "File is empty" };
-  }
-
-  /**
-   * TODO: Docs for this function.
-   *
-   * @param
-   * @returns
-   */
-  function load(arg: string) {
-    const filePath = arg;
-    if (mockedFiles[filePath]) {
-      setCurrData(mockedFiles[filePath]);
-      setFileLoaded(true);
-      return { message: "Success - File Loaded" };
-    } else {
-      setFileLoaded(false);
-      return { message: "Error - File does not exist" };
-    }
-  }
-
-  /**
-   * TODO: Docs for this function.
-   *
-   * @param
-   * @returns
-   */
-
-  function applySearch(
-    target: string,
-    header: boolean,
-    index: boolean,
-    column?: string
-  ): (string | number)[][] {
-    return searchMock(index, header, column || "", target);
-  }
-
-  /**
-   * TODO: Docs for this function.
-   *
-   * @param
-   * @returns
-   */
-  function search(): OutputContent {
-    // Split the command string by spaces and extract words within brackets
-    const splitString = commandString.split(" ");
-    const regexString = commandString.match(/(?<=\[).+?(?=\])/g);
-
-    console.log(splitString, regexString);
-
-    // Validate the basic conditions
-    if (!isFileLoaded) {
-      return { message: "Load file before searching" };
-    }
-    if (
-      !currData ||
-      currData.length === 0 ||
-      (currData.length === 1 && currData[0].length === 0)
-    ) {
-      return { message: "File is empty" };
-    }
-    if (splitString.length < 2) {
-      return {
-        message: "Please include a target and an optional column to search",
-      };
-    }
-    if (!regexString || regexString.length < 1) {
-      return { data: invalidCommandTable };
-    }
-
-    // Extract the parameters from the split string
-    const isExactMatch = splitString[1] === "true";
-    const isCaseSensitive = splitString[2] === "true";
-    const target = regexString[0];
-
-    // Apply search based on the extracted parameters
-    return { data: applySearch(target, isExactMatch, isCaseSensitive) };
   }
 
   /**
