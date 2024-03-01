@@ -18,11 +18,10 @@ interface REPLInputProps {
 }
 
 export class REPLMap {
-
-  data = new Map<string, REPLFunction>()
+  data = new Map<string, REPLFunction>();
 
   get(key: string): REPLFunction {
-    var entry = this.data.get(key)
+    var entry = this.data.get(key);
     if (entry == undefined) {
       return (): OutputContent => ({ data: invalidCommandTable });
     } else {
@@ -31,20 +30,23 @@ export class REPLMap {
   }
 
   set(key: string, value: REPLFunction): this {
-    (key !== undefined && key !== "" && key !== null) ? this.data.set(key, value) : console.log("Key cannot be undefined, null or empty!")
-    return this
+    key !== undefined && key !== "" && key !== null
+      ? this.data.set(key, value)
+      : console.log("Key cannot be undefined, null or empty!");
+    return this;
   }
 }
 
 export class StateMap {
-  stateData = new Map<string, any>()
-  dispatchData = new Map<string, Dispatch<SetStateAction<any>>>()
-
+  stateData = new Map<string, any>();
+  dispatchData = new Map<string, Dispatch<SetStateAction<any>>>();
 
   getState(key: string): any {
-    var entry = this.stateData.get(key)
+    var entry = this.stateData.get(key);
     if (entry == undefined) {
-      console.log("Invalid dispatch key: Values returned from this function may be unpredictable")
+      console.log(
+        "Invalid dispatch key: Values returned from this function may be unpredictable"
+      );
       return undefined;
     } else {
       return entry;
@@ -52,22 +54,31 @@ export class StateMap {
   }
 
   getDispatch(key: string): Dispatch<SetStateAction<any>> {
-    var entry = this.dispatchData.get(key)
+    var entry = this.dispatchData.get(key);
     if (entry == undefined) {
-      console.log("Invalid state key: Values returned from this function may be unpredictable")
+      console.log(
+        "Invalid state key: Values returned from this function may be unpredictable"
+      );
       return () => undefined;
     } else {
       return entry;
     }
   }
 
-  setState(key: string, state: any, dispatch: Dispatch<SetStateAction<any>>): this {
-    (key !== undefined && key !== "" && key !== null) ? this.stateData.set(key, state) : console.log("Key cannot be undefined, null or empty!");
-    (key !== undefined && key !== "" && key !== null) ? this.dispatchData.set(key, dispatch) : console.log("Key cannot be undefined, null or empty!")
-    return this
+  setState(
+    key: string,
+    state: any,
+    dispatch: Dispatch<SetStateAction<any>>
+  ): this {
+    key !== undefined && key !== "" && key !== null
+      ? this.stateData.set(key, state)
+      : console.log("Key cannot be undefined, null or empty!");
+    key !== undefined && key !== "" && key !== null
+      ? this.dispatchData.set(key, dispatch)
+      : console.log("Key cannot be undefined, null or empty!");
+    return this;
   }
 }
-
 
 /**
  * TODO: Docs for this function.
@@ -89,12 +100,12 @@ export function REPLInput(props: REPLInputProps) {
   // State that tracks loading
 
   /**
- * A command-processor function for our REPL. The function returns a string, which is the value to print to history when
- * the command is done executing.
- *
- * The arguments passed in the input (which need not be named "args") should
- * *NOT* contain the command-name prefix.
- */
+   * A command-processor function for our REPL. The function returns a string, which is the value to print to history when
+   * the command is done executing.
+   *
+   * The arguments passed in the input (which need not be named "args") should
+   * *NOT* contain the command-name prefix.
+   */
 
   /* A Map of strings to REPLFunctions. 
         The key represents the, 
@@ -108,9 +119,9 @@ export function REPLInput(props: REPLInputProps) {
     replMap.set("load", load);
     replMap.set("view", view);
     replMap.set("search", search);
-    stateMap.setState('mode', props.mode, props.setMode);
-    stateMap.setState('isFileLoaded', isFileLoaded, setFileLoaded);
-    stateMap.setState('currData', currData, setCurrData);
+    stateMap.setState("mode", props.mode, props.setMode);
+    stateMap.setState("isFileLoaded", isFileLoaded, setFileLoaded);
+    stateMap.setState("currData", currData, setCurrData);
   };
 
   // This function is triggered when the button is clicked.
@@ -126,10 +137,7 @@ export function REPLInput(props: REPLInputProps) {
     //stateMap
 
     setCount(count + 1);
-    props.setHistory([
-      ...props.history,
-      { command: command, output: output },
-    ]);
+    props.setHistory([...props.history, { command: command, output: output }]);
 
     setCommandString("");
   }
