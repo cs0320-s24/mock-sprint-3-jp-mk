@@ -3,6 +3,12 @@
   min-height: 95vh;
 }
 
+table {
+  margin-left: auto;
+  margin-right: auto;
+  border: 1px solid;
+}
+
 .repl-history {
   height: 55vh;
   margin: auto;
