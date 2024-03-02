@@ -1,5 +1,9 @@
 /**
- * Function retrieving the mocked inputs
+ * NOTE: File that holds testing pre-parsed CSV's
+ */
+
+/**
+ * Function retrieving the mocked inputs. Acts as "search" for the backend.
  *
  * @param index Whether the header is an index
  * @param header Whether there are headers
