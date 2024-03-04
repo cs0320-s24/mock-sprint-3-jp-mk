@@ -1,0 +1,76 @@
+.repl {
+  position: relative;
+  min-height: 95vh;
+}
+
+table {
+  margin-left: auto;
+  margin-right: auto;
+  border: 1px solid;
+}
+
+.repl-history {
+  height: 55vh;
+  margin: auto;
+  display: flex; /* Changed from block to flex to enable side by side layout */
+  flex-direction: column; /* Stack the history header and entries vertically */
+  overflow: auto; /* Changed from scroll to auto to show scrollbars as needed */
+}
+
+.repl-history .history-header {
+  display: flex;
+  justify-content: space-between; /* Spread the headers apart */
+  padding: 0 10px; /* Padding on the sides */
+}
+
+.repl-history .history-header > h3 {
+  flex: 1; /* Each header takes equal space */
+  text-align: center;
+}
+
+.repl-history .history-entry {
+  display: flex; /* Use flex to layout command and output sections side by side */
+  flex-direction: row; /* Layout the children in a row */
+  justify-content: center; /* Center children */
+}
+
+/* When in verbose mode, we want the command and output side by side */
+.repl-history .history-entry.verbose {
+  justify-content: space-between; /* Spread the command and output apart */
+}
+
+.repl-history .command-section {
+  flex: 1; /* Command section takes half the space */
+}
+
+.repl-history .output-section,
+.repl-history .output-section-brief {
+  flex: 1; /* Output section takes half the space */
+  text-align: center;
+}
+
+/* Style to visually distinguish command and output sections */
+.repl-history .command-section,
+.repl-history .output-section {
+  padding: 10px; /* Padding inside the sections */
+  box-sizing: border-box; /* Border and padding are included in width and height */
+}
+
+/* Additional styling for brief mode */
+.repl-history .output-section-brief {
+  width: 100%; /* Full width when in brief mode */
+}
+
+/* Responsive design adjustments */
+@media (max-width: 600px) {
+  .repl-history .history-header,
+  .repl-history .history-entry {
+    flex-direction: column; /* Stack the headers and sections vertically */
+  }
+}
+
+/* Button styles remain the same */
+button {
+  margin: auto;
+  display: block;
+}
